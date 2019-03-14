@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>Sequel Pro (Custom)</title>
+    <item>
+      <title>1.2 Snapshot</title>
+      <pubDate>Tue, 12 Mar 2019 12:51:03 +0100</pubDate>
+      <sparkle:minimumSystemVersion>10.6.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://sequelpro.com/appcast/Sequel%20Pro%20(Custom).zip" sparkle:version="5140" sparkle:shortVersionString="1.2 Snapshot" length="7117187" type="application/octet-stream"/>
+    </item>
+  </channel>
+  <channel/>
+</rss>

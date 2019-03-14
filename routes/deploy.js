@@ -12,17 +12,29 @@ router.post('/', function(req, res, next) {
     if (data.action === 'published' && data.release && data.release.draft === false && data.release.assets && data.release.assets.length) {
         let xmlFile;
         let distFile;
-
+        let xmlFileContentTypes = [
+            'text/xml',
+            'application/xml',
+          ]
+        ;
+        let distFileContentTypes = [
+            'application/zip',
+            'application/octet-stream',
+            'application/x-zip-compressed',
+            'multipart/x-zip',
+            'application/x-rar-compressed'
+          ]
+        ;
         // Find the XML describing the update and the dist zip.
         data.release.assets.forEach(function(asset) {
             if (distFile && xmlFile) {
                 return;
             }
-            if (asset.content_type === 'application/xml') {
+            if (xmlFileContentTypes.includes(asset.content_type)) {
                 xmlFile = asset;
                 return;
             }
-            if (asset.content_type === 'application/zip') {
+            if (distFileContentTypes.includes(asset.content_type)) {
                 distFile = asset;
                 return;
             }

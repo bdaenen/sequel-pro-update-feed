@@ -15,6 +15,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/deploy', function(req, res, next) {
+    if (!req.headers['x-hub-signature']) {
+        res.status(403);
+        res.json({message: 'Forbidden'});
+        return;
+    }
     if (!verifySignature(JSON.stringify(req.body), req.headers['x-hub-signature'])) {
         res.status(403);
         res.json({'message': 'Invalid secret.'});
@@ -28,7 +33,6 @@ app.use('/deploy', deployRouter);
 
 
 function verifySignature(data, signature) {
-    console.log(typeof data, typeof signature);
     return bufferEq(new Buffer.from(signature), Buffer.from(signData(process.env.SECRET, data)));
 }
 

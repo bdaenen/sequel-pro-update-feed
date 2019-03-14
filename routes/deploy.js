@@ -74,26 +74,10 @@ router.post('/', function(req, res, next) {
  * @param distFileUrl
  */
 function fetchAndAppendXmlToReleases(xmlFileUrl, distFileUrl, callback) {
-    const https = require('https');
+    const request = require('request');
 
-    https.get(xmlFileUrl, function(res) {
-        let xml = '';
-
-        res.on('data', function(chunk) {
-            xml += chunk;
-        });
-
-        res.on('error', function(e) {
-            appendXmlToReleases(e, null);
-        });
-
-        res.on('timeout', function(e) {
-            appendXmlToReleases(e, null);
-        });
-
-        res.on('end', function() {
-            appendXmlToReleases(null, {xml: xml, distFileUrl: distFileUrl, callback: callback});
-        });
+    request(xmlFileUrl, function (error, response, body) {
+        appendXmlToReleases(null, {xml: body, distFileUrl: distFileUrl, callback: callback});
     });
 }
 

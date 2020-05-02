@@ -1,0 +1,6 @@
+{
+  "resource": "/",
+  "path": "/deploy",
+  "httpMethod": "POST"
+
+}

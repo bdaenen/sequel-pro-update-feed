@@ -1,0 +1,46 @@
+# For full config options, check the docs:
+#    docs.serverless.com
+
+service: serverless-sqlpro-update-feed
+# app and org for use with dashboard.serverless.com
+app: serverless-sqlpro-update-feed-app
+org: bennodaenen
+
+custom:
+  bucket: sqlpro-update-feed
+  secrets-bucket: bennod-secrets
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  logs:
+    restApi: true
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:PutObjectAcl
+      Resource: "arn:aws:s3:::${self:custom.bucket}/*"
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:GetObjectAcl
+      Resource: "arn:aws:s3:::${self:custom.bucket}/*"
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:GetObjectAcl
+      Resource: "arn:aws:s3:::${self:custom.secrets-bucket}/sqlpro-update-feed/*"
+
+functions:
+  deploy:
+    handler: handler.deploy
+    events:
+      - http:
+          path: deploy
+          method: post
+    environment:
+      BUCKET: ${self:custom.bucket}
+      SECRETS_BUCKET: ${self:custom.secrets-bucket}
+      NODE_ENV: development

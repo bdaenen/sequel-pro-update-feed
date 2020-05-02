@@ -1,71 +1,62 @@
 let express = require('express');
 let router = express.Router();
 let parser = require('xml2js');
-let fs = require('fs');
-let util = require('util');
+const aws = require('aws-sdk');
+const s3 = new aws.S3();
+const {BUCKET} = process.env;
 
-/* GET home page. */
-router.post('/', function(req, res, next) {
-    let data = req.body;
+router.post('/', async function (req, res, next) {
+        let data = req.body;
+        // Only handle release publications
+        if (data.action === 'published' && data.release && data.release.draft === false && data.release.assets && data.release.assets.length) {
+            let xmlFile;
+            let distFile;
+            let xmlFileContentTypes = [
+                    'text/xml',
+                    'application/xml',
+                ]
+            ;
+            let distFileContentTypes = [
+                    'application/zip',
+                    'application/octet-stream',
+                    'application/x-zip-compressed',
+                    'multipart/x-zip',
+                    'application/x-rar-compressed'
+                ]
+            ;
+            // Find the XML describing the update and the dist zip.
+            data.release.assets.forEach(function (asset) {
+                if (distFile && xmlFile) {
+                    return;
+                }
+                if (xmlFileContentTypes.includes(asset.content_type)) {
+                    xmlFile = asset;
+                    return;
+                }
+                if (distFileContentTypes.includes(asset.content_type)) {
+                    distFile = asset;
+                    return;
+                }
+            });
 
-    // Only handle release publications
-    if (data.action === 'published' && data.release && data.release.draft === false && data.release.assets && data.release.assets.length) {
-        let xmlFile;
-        let distFile;
-        let xmlFileContentTypes = [
-            'text/xml',
-            'application/xml',
-          ]
-        ;
-        let distFileContentTypes = [
-            'application/zip',
-            'application/octet-stream',
-            'application/x-zip-compressed',
-            'multipart/x-zip',
-            'application/x-rar-compressed'
-          ]
-        ;
-        // Find the XML describing the update and the dist zip.
-        data.release.assets.forEach(function(asset) {
-            if (distFile && xmlFile) {
-                return;
-            }
-            if (xmlFileContentTypes.includes(asset.content_type)) {
-                xmlFile = asset;
-                return;
-            }
-            if (distFileContentTypes.includes(asset.content_type)) {
-                distFile = asset;
-                return;
-            }
-        });
+            // If we found an XML file, update the existing XML.
+            if (xmlFile) {
+                    let success = await fetchAndAppendXmlToReleases(
+                        xmlFile.browser_download_url,
+                        (distFile && distFile.browser_download_url) || undefined
+                    );
 
-        // If we found an XML file, update the existing XML.
-        if (xmlFile) {
-            try {
-                fetchAndAppendXmlToReleases(
-                  xmlFile.browser_download_url,
-                  (distFile && distFile.browser_download_url) || undefined,
-                  function(){
                     res.json({
-                        success: true
+                        success
                     });
-                  }
-                );
-            } catch(err) {
+
+            } else {
                 res.json({
                     success: false,
-                    message: err
+                    message: 'No XML file found.'
                 })
             }
         }
-        else {
-            res.json({
-                success: false,
-                message: 'No XML file found.'
-            })
-        }
-    }
 });
 
 /**
@@ -73,47 +64,68 @@ router.post('/', function(req, res, next) {
  * @param xmlFileUrl
  * @param distFileUrl
  */
-function fetchAndAppendXmlToReleases(xmlFileUrl, distFileUrl, callback) {
-    const request = require('request');
-
-    request(xmlFileUrl, function (error, response, body) {
-        appendXmlToReleases(null, {xml: body, distFileUrl: distFileUrl, callback: callback});
+function fetchAndAppendXmlToReleases(xmlFileUrl, distFileUrl) {
+    return new Promise((resolve) => {
+        const request = require('request');
+        request(xmlFileUrl, function (error, response, body) {
+            if (error) {
+                console.error(error);
+                throw error;
+            }
+            resolve(appendXmlToReleases({xml: body, distFileUrl: distFileUrl}))
+        });
     });
 }
 
-function appendXmlToReleases(err, data) {
-    if (err) {
-        return console.err(err);
-    }
-
-    parser.parseString(data.xml, function(err, jsonObj){
-        let oldXml = fs.readFileSync('./public/releases.xml');
-        parser.parseString(oldXml.toString(), function(err, oldJsonObj){
-            if (!Array.isArray(oldJsonObj.rss.channel[0].item)) {
-                oldJsonObj.rss.channel[0].item = [oldJsonObj.rss.channel[0].item];
-            }
-
-            if (!Array.isArray(jsonObj.rss.channel[0].item)) {
-                jsonObj.rss.channel[0].item = [jsonObj.rss.channel[0].item];
-            }
-
-            jsonObj.rss.channel[0].item.forEach(function(item) {
-                if (data.distFileUrl) {
-                    item.enclosure[0].$.url = data.distFileUrl;
+function appendXmlToReleases(data) {
+    return new Promise((resolve, reject) => {
+        parser.parseString(data.xml, function (err, jsonObj) {
+            if (err) console.log(err);
+            s3.getObject({Bucket: BUCKET, Key: 'releases.xml'}, (err, data) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
                 }
-                oldJsonObj.rss.channel[0].item.unshift(item);
+
+                /** @type Buffer */
+                let oldXml = data.Body;
+                parser.parseString(oldXml.toString('utf-8'), function (err, oldJsonObj) {
+                    if (err) {
+                        console.log(err);
+                        reject(err)
+                    }
+                    if (!Array.isArray(oldJsonObj.rss.channel[0].item)) {
+                        oldJsonObj.rss.channel[0].item = [oldJsonObj.rss.channel[0].item];
+                    }
+
+                    if (!Array.isArray(jsonObj.rss.channel[0].item)) {
+                        jsonObj.rss.channel[0].item = [jsonObj.rss.channel[0].item];
+                    }
+
+                    jsonObj.rss.channel[0].item.forEach(function (item) {
+                        if (data.distFileUrl) {
+                            item.enclosure[0].$.url = data.distFileUrl;
+                        }
+                        oldJsonObj.rss.channel[0].item.unshift(item);
+                    });
+
+                    let builder = new parser.Builder();
+
+                    s3.putObject({
+                        Bucket: BUCKET,
+                        Key: 'releases.xml',
+                        Body: Buffer.from(builder.buildObject(oldJsonObj), 'utf-8')
+                    }, (err, data) => {
+                        if (err) {
+                            console.log(err);
+                            reject(err);
+                        }
+                        resolve(true);
+                    });
+                });
             });
-
-
-            let builder = new parser.Builder();
-            fs.writeFileSync('./public/releases.xml', builder.buildObject(oldJsonObj));
-
-            if (data.callback) {
-                data.callback.call();
-            }
         });
-
-    });
+    })
 }
 
 module.exports = router;

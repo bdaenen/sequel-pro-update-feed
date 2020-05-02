@@ -3,6 +3,30 @@
   <channel>
     <title>Sequel Pro (Custom)</title>
     <item>
+      <title>1.1.2-tobania.5</title>
+      <pubDate>Sat, 26 Oct 2019 19:14:48 +0200</pubDate>
+      <sparkle:minimumSystemVersion>10.12.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/bdaenen/sequelpro/releases/download/1.1.2-tobania.5/sequel.pro.zip" sparkle:version="5160" sparkle:shortVersionString="1.1.2-tobania.5" length="7802926" type="application/octet-stream" sparkle:edSignature="lYdf/lZgTu4L4b1F9JjXj+oQTn7JMJFhSPKWTi1vfeAuXPpTu/CCO57Kcaqfv6OqsgtfcHEm3SwimfZLBBKuDA=="/>
+    </item>
+    <item>
+      <title>1.1.2-tobania.4</title>
+      <pubDate>Wed, 18 Sep 2019 19:02:07 +0200</pubDate>
+      <sparkle:minimumSystemVersion>10.12.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/bdaenen/sequelpro/releases/download/1.1.2-tobania.4/sequel.pro.zip" sparkle:version="5156" sparkle:shortVersionString="1.1.2-tobania.4" length="7800761" type="application/octet-stream" sparkle:edSignature="aTdnLnbkEYWD1CrQ1FwZ+uxbT36hkFJhAgKiWPyaZavIC7FGtMdNiORW2mXnpiHMgzXePdAqTQjBXYIEVTLBAw=="/>
+    </item>
+    <item>
+      <title>1.1.2-tobania.3</title>
+      <pubDate>Wed, 17 Jul 2019 15:25:11 +0200</pubDate>
+      <sparkle:minimumSystemVersion>10.12.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/bdaenen/sequelpro/releases/download/release-1.1.2-tobania.3/Sequel.Pro.zip" sparkle:version="5154" sparkle:shortVersionString="1.1.2-tobania.3" length="8180974" type="application/octet-stream" sparkle:edSignature="dd1ZziQivBik1aS7/9f6wmSlGVL3Fo699b/fzzWjwx00m2PPBkrbwcn7VYh4sq9+6t0kFZBL4jvWFD87NnZHDA=="/>
+    </item>
+    <item>
+      <title>1.1.2-tobania.2</title>
+      <pubDate>Thu, 14 Mar 2019 18:43:23 +0100</pubDate>
+      <sparkle:minimumSystemVersion>10.12.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/bdaenen/sequelpro/releases/download/release-1.1.2-tobania.2/Sequel.Pro.zip" sparkle:version="5142" sparkle:shortVersionString="1.1.2-tobania.2" length="8177321" type="application/octet-stream" sparkle:edSignature="1BCGmAn/c2obbXJ1nMfq4/SOJZyZIyv2w9m4S8xAdRf/V9bWRi3zbB0E14vXIpvCWQY1B5fPjuXOa5Ik1tQRCA=="/>
+    </item>
+    <item>
       <title>1.2 Snapshot</title>
       <pubDate>Tue, 12 Mar 2019 12:51:03 +0100</pubDate>
       <sparkle:minimumSystemVersion>10.6.0</sparkle:minimumSystemVersion>
